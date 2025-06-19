@@ -55,7 +55,7 @@ from legged_gym.gym_utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqr
 from legged_gym.gym_utils.helpers import class_to_dict
 from legged_gym.envs.base.humanoid import Humanoid
 from legged_gym.envs.base.humanoid_config import HumanoidCfg, HumanoidCfgPPO
-from legged_gym.envs.g1track.g1waist_track_config import G1WaistTrackCfg
+from legged_gym.envs.g1track.g1waist_track_config import G1WaistTrackCfg 
 
 class G1WaistTrack(Humanoid):
     def __init__(self, cfg: G1WaistTrackCfg, sim_params, physics_engine, sim_device, headless):
@@ -94,7 +94,11 @@ class G1WaistTrack(Humanoid):
             5.6199e-03, -8.3706e-03, -1.0773e-03]).to(sim_device).repeat(self.num_envs, 1)
         self.initial_dof_pos = torch.tensor([-0.3600,  0.2481,  1.6115, -0.0647, -0.8612, -0.1226, -0.3878,  0.3584,
             1.5328,  0.1519, -0.8651,  0.2362, -0.0357,  0.0685, -0.5200,  0.4665,
-            0.8218,  0.4253,  1.2972,  0.1429, -1.0324, -0.4241,  1.4075]).to(sim_device).repeat(self.num_envs, 1)
+            0.8218,  0.4253,  1.2972,  0.1429, -1.0324, -0.4241,  1.4075]).to(sim_device).repeat(self.num_envs, 1) 
+        
+        self.roll_data = []
+        self.pitch_data = [] 
+        # self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
         data = np.load("facingup_poses.npy")
         training_idx = int(data.shape[0] * 0.5)
         self.initial_root_states_all = torch.from_numpy(data[:training_idx, :13]).to(self.device)
@@ -649,7 +653,8 @@ class G1WaistTrack(Humanoid):
         self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec)
         self.base_lin_acc = (self.root_states[:, 7:10] - self.last_root_vel[:, :3]) / self.dt
 
-        self.roll, self.pitch, self.yaw = euler_from_quaternion(self.base_quat)
+        self.roll, self.pitch, self.yaw = euler_from_quaternion(self.base_quat) 
+        self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
 
         contact = torch.norm(self.contact_forces[:, self.feet_indices], dim=-1) > 2.0
         self.contact_filt = torch.logical_or(contact, self.last_contacts)
@@ -737,8 +742,9 @@ class G1WaistTrack(Humanoid):
         self.base_yaw_quat = quat_from_euler_xyz(0 * self.yaw, 0 * self.yaw, self.yaw)
         obs_buf = torch.cat(
             (
-                self.base_ang_vel * self.obs_scales.ang_vel,  # 3 dims
-                imu_obs,  # 2 dims
+                self.base_ang_vel * self.obs_scales.ang_vel,  # 3 dims 
+                self.projected_gravity,
+                # imu_obs,  # 2 dims
                 self.reindex((self.dof_pos - self.default_dof_pos_all) * self.obs_scales.dof_pos),
                 self.reindex(self.dof_vel * self.obs_scales.dof_vel),
                 self.reindex(self.action_history_buf[:, -1]),

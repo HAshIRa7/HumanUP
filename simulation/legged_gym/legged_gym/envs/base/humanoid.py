@@ -450,14 +450,14 @@ class Humanoid(LeggedRobot):
         noise_scale_vec[:, noise_start_dim : noise_start_dim + 3] = (
             self.cfg.noise.noise_scales.ang_vel
         )
-        noise_scale_vec[:, noise_start_dim + 3 : noise_start_dim + 5] = (
-            self.cfg.noise.noise_scales.imu
+        noise_scale_vec[:, noise_start_dim + 3 : noise_start_dim + 6] = (
+            self.cfg.noise.noise_scales.gravity
         )
-        noise_scale_vec[:, noise_start_dim + 5 : noise_start_dim + 5 + self.num_dof] = (
+        noise_scale_vec[:, noise_start_dim + 6 : noise_start_dim + 6 + self.num_dof] = (
             self.cfg.noise.noise_scales.dof_pos
         )
         noise_scale_vec[
-            :, noise_start_dim + 5 + self.num_dof : noise_start_dim + 5 + 2 * self.num_dof
+            :, noise_start_dim + 6 + self.num_dof : noise_start_dim + 6 + 2 * self.num_dof
         ] = self.cfg.noise.noise_scales.dof_vel
         return noise_scale_vec
 

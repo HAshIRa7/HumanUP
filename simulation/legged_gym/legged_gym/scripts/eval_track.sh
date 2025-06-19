@@ -9,7 +9,6 @@ traj_name=${4}
 python play.py --task "${task_name}" \
                 --proj_name "${proj_name}" \
                 --exptid "${exptid}" \
-                --num_envs 1 \
+                --num_envs 10 \
                 --checkpoint "${checkpoint}" \
                 --traj_name "${traj_name}"\
-                --record_video

@@ -3,7 +3,7 @@ from statistics import mode
 sys.path.append("../../../rsl_rl")
 import torch
 import torch.nn as nn
-from rsl_rl.modules.actor_critic_rma import Actor, StateHistoryEncoder, get_activation
+from rsl_rl.modules.actor_critic import Actor, get_activation
 import argparse
 import code
 import shutil
@@ -56,17 +56,18 @@ class HardwareRefNN(nn.Module):
         self.actor = Actor(num_prop, 
                            num_actions, 
                            actor_hidden_dims, 
-                           priv_encoder_dims, num_priv_latent, num_hist, 
                            activation, tanh_encoder_output=False)
 
     def load_normalizer(self, normalizer):
-        self.normalizer = normalizer
+        self.normalizer = normalizer 
+        self.normalizer.running_mean = self.normalizer.running_mean[:self.num_prop]
+        self.normalizer.running_var = self.normalizer.running_var[:self.num_prop] 
         self.normalizer.eval()
 
     def forward(self, obs):
-        assert obs.shape[1] == self.num_obs, f"Expected {self.num_obs} but got {obs.shape[1]}"
+        # assert obs.shape[1] == self.num_obs, f"Expected {self.num_obs} but got {obs.shape[1]}"
         obs = self.normalizer(obs)
-        return self.actor(obs, hist_encoding=True, eval=False)
+        return self.actor(obs, hist_encoding=False, eval=False)
     
 def play(args):
     load_run = "../../logs/{}/{}".format(args.proj_name, args.exptid)
@@ -103,7 +104,7 @@ def play(args):
     with torch.no_grad(): 
         num_envs = 2
         
-        obs_input = torch.ones(num_envs, n_proprio + n_priv_latent + history_len*n_proprio + critic_obs_extra, device=device)
+        obs_input = torch.ones(num_envs, n_proprio, device=device)
         print("obs_input shape: ", obs_input.shape)
         
         traced_policy = torch.jit.trace(policy, obs_input)

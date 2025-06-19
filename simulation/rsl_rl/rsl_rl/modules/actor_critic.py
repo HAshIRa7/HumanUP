@@ -82,7 +82,6 @@ class ActorCritic(nn.Module):
         num_prop,
         num_critic_obs,
         num_priv_latent,
-        num_priv_explicit,
         num_hist,
         num_actions,
         actor_hidden_dims=[256, 256, 256],

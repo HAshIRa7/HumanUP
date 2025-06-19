@@ -39,7 +39,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         num_envs = 4096
         num_actions = 23  # NOTE: the wrist dof is removed
         n_priv = 0
-        n_proprio = 3 + 2 + 3 * num_actions  # NOTE
+        n_proprio = 3 + 3 + 3 * num_actions  # NOTE
         n_priv_latent = 4 + 1 + 2 * num_actions + 3
         history_len = 10
 
@@ -318,8 +318,8 @@ class G1WaistTrackCfgPPO(HumanoidCfgPPO):
     seed = 1
 
     class runner(HumanoidCfgPPO.runner):
-        policy_class_name = "ActorCriticRMA"
-        algorithm_class_name = "PPORMA"
+        policy_class_name = "ActorCritic"
+        algorithm_class_name = "PPO"
         
         runner_class_name = "OnPolicyRunner"
         max_iterations = 50001  # number of policy updates

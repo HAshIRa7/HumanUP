@@ -241,9 +241,7 @@ class OnPolicyRunner:
                 mean_value_loss,
                 mean_surrogate_loss,
                 mean_priv_reg_loss,
-                priv_reg_coef,
-                mean_grad_penalty_loss,
-                grad_penalty_coef,
+                priv_reg_coef
             ) = self.alg.update()
             if hist_encoding and not self.cfg["algorithm_class_name"] == "PPO":
                 print("Updating dagger...")
@@ -308,7 +306,7 @@ class OnPolicyRunner:
         wandb_dict["Loss/value_func"] = locs["mean_value_loss"]
         wandb_dict["Loss/surrogate"] = locs["mean_surrogate_loss"]
         wandb_dict["Loss/entropy_coef"] = locs["entropy_coef"]
-        wandb_dict["Loss/grad_penalty_loss"] = locs["mean_grad_penalty_loss"]
+        # wandb_dict["Loss/grad_penalty_loss"] = locs["mean_grad_penalty_loss"]
         wandb_dict["Loss/learning_rate"] = self.alg.learning_rate
 
         wandb_dict["Adaptation/hist_latent_loss"] = locs["mean_hist_latent_loss"]
@@ -352,7 +350,7 @@ class OnPolicyRunner:
                             'collection_time']:.3f}s, learning {locs['learn_time']:.3f}s)\n"""
                 f"""{'Value function loss:':>{pad}} {locs['mean_value_loss']:.4f}\n"""
                 f"""{'Surrogate loss:':>{pad}} {locs['mean_surrogate_loss']:.4f}\n"""
-                f"""{'Grad penalty loss:':>{pad}} {locs['mean_grad_penalty_loss']:.4f}\n"""
+                # f"""{'Grad penalty loss:':>{pad}} {locs['mean_grad_penalty_loss']:.4f}\n"""
                 f"""{'Mean action noise std:':>{pad}} {mean_std.item():.2f}\n"""
                 f"""{'Mean reward (total):':>{pad}} {statistics.mean(locs['rewbuffer']):.2f}\n"""
                 f"""{'Mean episode length:':>{pad}} {statistics.mean(locs['lenbuffer']):.2f}\n"""
