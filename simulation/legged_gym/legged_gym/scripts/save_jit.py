@@ -78,7 +78,7 @@ def play(args):
         num_scan = 0
         num_actions = 23
         
-        n_proprio = 3 + 2 + 3*num_actions
+        n_proprio = 3 + 3 + 3*num_actions
     else:
         raise ValueError(f"Robot {args.robot} not supported!")
     
