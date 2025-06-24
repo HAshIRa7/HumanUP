@@ -738,7 +738,7 @@ class G1WaistTrack(Humanoid):
     def compute_observations(self):
 
 
-        imu_obs = torch.stack((self.roll, self.pitch), dim=1)
+        # imu_obs = torch.stack((self.roll, self.pitch), dim=1)
         self.base_yaw_quat = quat_from_euler_xyz(0 * self.yaw, 0 * self.yaw, self.yaw)
         obs_buf = torch.cat(
             (
@@ -751,18 +751,6 @@ class G1WaistTrack(Humanoid):
             ),
             dim=-1,
         )
-        if self.cfg.noise.add_noise and self.headless:
-            obs_buf += (
-                (2 * torch.rand_like(obs_buf) - 1)
-                * self.noise_scale_vec
-                * min(
-                    self.total_env_steps_counter / (self.cfg.noise.noise_increasing_steps * 24), 1.0
-                )
-            )
-        elif self.cfg.noise.add_noise and not self.headless:
-            obs_buf += (2 * torch.rand_like(obs_buf) - 1) * self.noise_scale_vec
-        else:
-            obs_buf += 0.0
 
         if self.cfg.domain_rand.domain_rand_general:
             priv_latent = torch.cat(
@@ -778,11 +766,33 @@ class G1WaistTrack(Humanoid):
         else:
             priv_latent = torch.zeros(
                 (self.num_envs, self.cfg.env.n_priv_latent), device=self.device
-            )
+            ) 
 
-        self.obs_buf = torch.cat(
+        self.privileged_obs_buf = torch.cat(
             [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
         )
+
+        if self.cfg.noise.add_noise and self.headless:
+            obs_buf += (
+                (2 * torch.rand_like(obs_buf) - 1)
+                * self.noise_scale_vec
+                * min(
+                    self.total_env_steps_counter / (self.cfg.noise.noise_increasing_steps * 24), 1.0
+                )
+            )
+        elif self.cfg.noise.add_noise and not self.headless:
+            obs_buf += (2 * torch.rand_like(obs_buf) - 1) * self.noise_scale_vec
+        else:
+            obs_buf += 0.0
+
+        # self.obs_buf = torch.cat(
+        #     [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
+        # )  
+
+        self.obs_buf = torch.cat(
+            [obs_buf, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
+        )
+
 
         if self.cfg.env.history_len > 0:
             self.obs_history_buf = torch.where(
