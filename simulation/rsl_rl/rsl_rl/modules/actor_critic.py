@@ -105,7 +105,7 @@ class ActorCritic(nn.Module):
         activation = get_activation(activation)
 
         self.actor = Actor(
-            num_prop=num_prop,
+            num_prop=num_prop*num_hist,
             num_actions=num_actions,
             actor_hidden_dims=actor_hidden_dims,
             activation=activation,

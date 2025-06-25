@@ -41,11 +41,13 @@ class G1WaistTrackCfg(HumanoidCfg):
         n_priv = 0
         n_proprio = 3 + 3 + 3 * num_actions  # NOTE
         n_priv_latent = 4 + 1 + 2 * num_actions + 3
-        history_len = 10
+        history_len = 4
 
-        num_observations = n_proprio * history_len #n_proprio + n_priv_latent + history_len * n_proprio + n_priv
+        #n_proprio = history_len * n_proprio
 
-        num_privileged_obs = n_proprio + n_priv_latent + history_len * n_proprio + n_priv
+        num_observations = n_proprio * (history_len)#n_proprio + n_priv_latent + history_len * n_proprio + n_priv
+
+        num_privileged_obs = n_proprio * (history_len) #+ n_priv
 
         env_spacing = 3.0  # not used with heightfields/trimeshes
         send_timeouts = True  # send time out information to the algorithm

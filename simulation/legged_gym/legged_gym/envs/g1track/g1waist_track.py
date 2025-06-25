@@ -752,25 +752,25 @@ class G1WaistTrack(Humanoid):
             dim=-1,
         )
 
-        if self.cfg.domain_rand.domain_rand_general:
-            priv_latent = torch.cat(
-                (
-                    self.mass_params_tensor,
-                    self.friction_coeffs_tensor,
-                    self.motor_strength[0] - 1,
-                    self.motor_strength[1] - 1,
-                    self.base_lin_vel,
-                ),
-                dim=-1,
-            )
-        else:
-            priv_latent = torch.zeros(
-                (self.num_envs, self.cfg.env.n_priv_latent), device=self.device
-            ) 
+        # if self.cfg.domain_rand.domain_rand_general:
+        #     priv_latent = torch.cat(
+        #         (
+        #             self.mass_params_tensor,
+        #             self.friction_coeffs_tensor,
+        #             self.motor_strength[0] - 1,
+        #             self.motor_strength[1] - 1,
+        #             self.base_lin_vel,
+        #         ),
+        #         dim=-1,
+        #     )
+        # else:
+        #     priv_latent = torch.zeros(
+        #         (self.num_envs, self.cfg.env.n_priv_latent), device=self.device
+        #     ) 
 
-        self.privileged_obs_buf = torch.cat(
-            [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
-        )
+        # self.privileged_obs_buf = torch.cat(
+        #     [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
+        # )
 
         if self.cfg.noise.add_noise and self.headless:
             obs_buf += (
@@ -790,7 +790,7 @@ class G1WaistTrack(Humanoid):
         # )  
 
         self.obs_buf = torch.cat(
-            [obs_buf, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
+            [obs_buf, self.obs_history_buf[:, 1:].view(self.num_envs, -1)], dim=-1
         )
 
 
