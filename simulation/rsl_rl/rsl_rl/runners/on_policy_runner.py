@@ -68,7 +68,7 @@ class OnPolicyRunner:
         policy_class = eval(self.cfg["policy_class_name"])
         actor_critic = policy_class(
             num_prop=self.env.cfg.env.n_proprio,
-            num_critic_obs=self.env.num_obs,
+            num_critic_obs=self.env.num_privileged_obs,
             num_priv_latent=self.env.cfg.env.n_priv_latent,
             num_hist=self.env.cfg.env.history_len,
             num_actions=self.env.num_actions,

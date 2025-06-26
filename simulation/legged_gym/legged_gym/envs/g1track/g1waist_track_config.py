@@ -40,14 +40,14 @@ class G1WaistTrackCfg(HumanoidCfg):
         num_actions = 23  # NOTE: the wrist dof is removed
         n_priv = 0
         n_proprio = 3 + 3 + 3 * num_actions  # NOTE
-        n_priv_latent = 4 + 1 + 2 * num_actions + 3
+        n_priv_latent = 3 + 3 + 3 + 4 * num_actions + 1
         history_len = 4
 
         #n_proprio = history_len * n_proprio
 
         num_observations = n_proprio * (history_len)#n_proprio + n_priv_latent + history_len * n_proprio + n_priv
 
-        num_privileged_obs = n_proprio * (history_len) #+ n_priv
+        num_privileged_obs = n_priv_latent * (history_len) #+ n_priv
 
         env_spacing = 3.0  # not used with heightfields/trimeshes
         send_timeouts = True  # send time out information to the algorithm
@@ -59,7 +59,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         history_encoding = True
         contact_buf_len = 10
 
-        normalize_obs = True
+        normalize_obs = False
 
         terminate_on_velocity = True
         terminate_on_height = True

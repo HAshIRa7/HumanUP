@@ -161,7 +161,14 @@ class G1WaistTrack(Humanoid):
 
 
     def _init_buffers(self):
-        super()._init_buffers()
+        super()._init_buffers() 
+        self.priv_obs_history_buf = torch.zeros(
+            self.num_envs,
+            self.cfg.env.history_len,
+            self.cfg.env.n_priv_latent,
+            device=self.device,
+            dtype=torch.float,
+        )
         self.rigid_body_rot = self.rigid_body_states[..., :self.num_bodies, 3:7]
 
     def _create_envs(self):
@@ -770,7 +777,21 @@ class G1WaistTrack(Humanoid):
 
         # self.privileged_obs_buf = torch.cat(
         #     [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
-        # )
+        # ) 
+
+        current_phase = (self._get_phase() * (self.target_traj_length - 1)).to(torch.int32)
+        target_dof_pos = self.dof_pos_all_interp[current_phase].squeeze(-1)
+        dof_diff = self.dof_pos - target_dof_pos
+
+        priv_obs_buf = torch.cat(
+            (
+                self.base_lin_vel,
+                obs_buf, 
+                dof_diff, 
+                current_phase.unsqueeze(-1),
+            ),
+            dim=-1
+        )
 
         if self.cfg.noise.add_noise and self.headless:
             obs_buf += (
@@ -783,14 +804,14 @@ class G1WaistTrack(Humanoid):
         elif self.cfg.noise.add_noise and not self.headless:
             obs_buf += (2 * torch.rand_like(obs_buf) - 1) * self.noise_scale_vec
         else:
-            obs_buf += 0.0
-
-        # self.obs_buf = torch.cat(
-        #     [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
-        # )  
+            obs_buf += 0.0 
 
         self.obs_buf = torch.cat(
             [obs_buf, self.obs_history_buf[:, 1:].view(self.num_envs, -1)], dim=-1
+        )
+
+        self.priv_obs_buf = torch.cat(
+            [priv_obs_buf, self.priv_obs_history_buf[:, 1:].view(self.num_envs, -1)], dim=-1
         )
 
 
@@ -799,6 +820,12 @@ class G1WaistTrack(Humanoid):
                 (self.episode_length_buf <= 1)[:, None, None],
                 torch.stack([obs_buf] * self.cfg.env.history_len, dim=1),
                 torch.cat([self.obs_history_buf[:, 1:], obs_buf.unsqueeze(1)], dim=1),
+            ) 
+
+            self.priv_obs_history_buf = torch.where(
+                (self.episode_length_buf <= 1)[:, None, None],
+                torch.stack([priv_obs_buf] * self.cfg.env.history_len, dim=1),
+                torch.cat([self.priv_obs_history_buf[:, 1:], priv_obs_buf.unsqueeze(1)], dim=1),
             )
 
         self.contact_buf = torch.where(
