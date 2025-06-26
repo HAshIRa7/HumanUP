@@ -747,6 +747,12 @@ class G1WaistTrack(Humanoid):
 
         # imu_obs = torch.stack((self.roll, self.pitch), dim=1)
         self.base_yaw_quat = quat_from_euler_xyz(0 * self.yaw, 0 * self.yaw, self.yaw)
+
+        phase = self._get_phase()
+        current_phase = (self._get_phase() * (self.target_traj_length - 1)).to(torch.int32)
+        target_dof_pos = self.dof_pos_all_interp[current_phase].squeeze(-1)
+        dof_diff = self.dof_pos - target_dof_pos 
+
         obs_buf = torch.cat(
             (
                 self.base_ang_vel * self.obs_scales.ang_vel,  # 3 dims 
@@ -755,6 +761,7 @@ class G1WaistTrack(Humanoid):
                 self.reindex((self.dof_pos - self.default_dof_pos_all) * self.obs_scales.dof_pos),
                 self.reindex(self.dof_vel * self.obs_scales.dof_vel),
                 self.reindex(self.action_history_buf[:, -1]),
+                phase.unsqueeze(-1),
             ),
             dim=-1,
         )
@@ -777,18 +784,19 @@ class G1WaistTrack(Humanoid):
 
         # self.privileged_obs_buf = torch.cat(
         #     [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
-        # ) 
+        # )
 
-        current_phase = (self._get_phase() * (self.target_traj_length - 1)).to(torch.int32)
-        target_dof_pos = self.dof_pos_all_interp[current_phase].squeeze(-1)
-        dof_diff = self.dof_pos - target_dof_pos
+        head_height = self.rigid_body_states[:, self.head_idx, 2]
+        target_head_height = self.head_height_all_interp[current_phase].squeeze(-1)
+        head_height_error = torch.abs(head_height - target_head_height)
 
         priv_obs_buf = torch.cat(
             (
                 self.base_lin_vel,
                 obs_buf, 
-                dof_diff, 
-                current_phase.unsqueeze(-1),
+                dof_diff,
+                head_height_error.unsqueeze(-1),
+                #current_phase.unsqueeze(-1),
             ),
             dim=-1
         )

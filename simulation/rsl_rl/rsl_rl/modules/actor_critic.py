@@ -105,7 +105,7 @@ class ActorCritic(nn.Module):
         activation = get_activation(activation)
 
         self.actor = Actor(
-            num_prop=num_prop*num_hist,
+            num_prop=num_prop * num_hist,
             num_actions=num_actions,
             actor_hidden_dims=actor_hidden_dims,
             activation=activation,
@@ -126,10 +126,10 @@ class ActorCritic(nn.Module):
 
         # Action noise
         if self.fix_action_std:
-            # action_std = torch.tensor([0.5, 0.25, 0.25, 0.25, 0.2, 0.2] * 2 + [0.2, 0.2, 0.2] + [0.3] * 8)
-            action_std = torch.tensor(
-                [0.3, 0.3, 0.3, 0.4, 0.2] * 2 + [0.25, 0.25, 0.25] + [0.5] * 8
-            )
+            action_std = torch.tensor([0.5, 0.25, 0.25, 0.25, 0.2, 0.2] * 2 + [0.25, 0.25, 0.25] + [0.5] * 8)
+            # action_std = torch.tensor(
+            #     [0.3, 0.3, 0.3, 0.4, 0.2] * 2 + [0.25, 0.25, 0.25] + [0.5] * 8
+            # )
             self.std = nn.Parameter(action_std, requires_grad=False)
         else:
             self.std = nn.Parameter(init_noise_std * torch.ones(num_actions))

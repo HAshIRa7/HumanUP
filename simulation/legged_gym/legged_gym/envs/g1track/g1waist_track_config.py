@@ -39,8 +39,8 @@ class G1WaistTrackCfg(HumanoidCfg):
         num_envs = 4096
         num_actions = 23  # NOTE: the wrist dof is removed
         n_priv = 0
-        n_proprio = 3 + 3 + 3 * num_actions  # NOTE
-        n_priv_latent = 3 + 3 + 3 + 4 * num_actions + 1
+        n_proprio = 3 + 3 + 3 * num_actions + 1# NOTE
+        n_priv_latent = 3 + 3 + 3 + 4 * num_actions + 1 + 1
         history_len = 4
 
         #n_proprio = history_len * n_proprio
@@ -339,6 +339,8 @@ class G1WaistTrackCfgPPO(HumanoidCfgPPO):
     class policy(HumanoidCfgPPO.policy):
         action_std = [0.3, 0.3, 0.3, 0.4, 0.2, 0.2] * 2 + [0.1] * 3 + [0.2] * 8  # NOTE: the wrist dof is removed
         init_noise_std = 1.0
+        fix_action_std = False
 
     class algorithm(HumanoidCfgPPO.algorithm):
         grad_penalty_coef_schedule = [0.00, 0.00, 700, 1000]  # NOTE: no grad penalty
+        entropy_coef = 0.000

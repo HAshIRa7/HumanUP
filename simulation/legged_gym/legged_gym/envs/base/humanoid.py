@@ -446,7 +446,8 @@ class Humanoid(LeggedRobot):
         noise_scale_vec = torch.zeros(1, self.cfg.env.n_proprio, device=self.device)
         if not self.cfg.noise.add_noise:
             return noise_scale_vec
-        noise_start_dim = 2 + self.cfg.commands.num_commands
+        # noise_start_dim = 2 + self.cfg.commands.num_commands
+        noise_start_dim = 0
         noise_scale_vec[:, noise_start_dim : noise_start_dim + 3] = (
             self.cfg.noise.noise_scales.ang_vel
         )

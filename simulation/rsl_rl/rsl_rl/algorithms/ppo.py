@@ -261,8 +261,9 @@ class PPO:
             self.optimizer.step()
 
             mean_value_loss += value_loss.item()
-            mean_surrogate_loss += surrogate_loss.item()
-            mean_priv_reg_loss += 0
+            mean_surrogate_loss += surrogate_loss.item() 
+            mean_priv_reg_loss += 0 
+            # entropy_loss = -entropy_batch.mean().item()
 
         num_updates = self.num_learning_epochs * self.num_mini_batches
         mean_value_loss /= num_updates
@@ -273,52 +274,52 @@ class PPO:
         self.update_counter()
         return mean_value_loss, mean_surrogate_loss, mean_priv_reg_loss, 0
 
-    def update_dagger(self):
-        mean_hist_latent_loss = 0
-        if self.actor_critic.is_recurrent:
-            generator = self.storage.reccurent_mini_batch_generator(
-                self.num_mini_batches, self.num_learning_epochs
-            )
-        else:
-            generator = self.storage.mini_batch_generator(
-                self.num_mini_batches, self.num_learning_epochs
-            )
-        for (
-            obs_batch,
-            critic_obs_batch,
-            actions_batch,
-            target_values_batch,
-            advantages_batch,
-            returns_batch,
-            old_actions_log_prob_batch,
-            old_mu_batch,
-            old_sigma_batch,
-            hid_states_batch,
-            masks_batch,
-        ) in generator:
-            with torch.inference_mode():
-                self.actor_critic.act(
-                    obs_batch,
-                    hist_encoding=True,
-                    masks=masks_batch,
-                    hidden_states=hid_states_batch[0],
-                )
+    # def update_dagger(self):
+    #     mean_hist_latent_loss = 0
+    #     if self.actor_critic.is_recurrent:
+    #         generator = self.storage.reccurent_mini_batch_generator(
+    #             self.num_mini_batches, self.num_learning_epochs
+    #         )
+    #     else:
+    #         generator = self.storage.mini_batch_generator(
+    #             self.num_mini_batches, self.num_learning_epochs
+    #         )
+    #     for (
+    #         obs_batch,
+    #         critic_obs_batch,
+    #         actions_batch,
+    #         target_values_batch,
+    #         advantages_batch,
+    #         returns_batch,
+    #         old_actions_log_prob_batch,
+    #         old_mu_batch,
+    #         old_sigma_batch,
+    #         hid_states_batch,
+    #         masks_batch,
+    #     ) in generator:
+    #         with torch.inference_mode():
+    #             self.actor_critic.act(
+    #                 obs_batch,
+    #                 hist_encoding=True,
+    #                 masks=masks_batch,
+    #                 hidden_states=hid_states_batch[0],
+    #             )
 
-            # Adaptation module update
-            with torch.inference_mode():
-                priv_latent_batch = self.actor_critic.actor.infer_priv_latent(obs_batch)
-            hist_latent_batch = self.actor_critic.actor.infer_hist_latent(obs_batch)
-            hist_latent_loss = (
-                (priv_latent_batch.detach() - hist_latent_batch).norm(p=2, dim=1).mean()
-            )
-            self.hist_encoder_optimizer.zero_grad()
+    #         # Adaptation module update
+    #         with torch.inference_mode():
+    #             priv_latent_batch = self.actor_critic.actor.infer_priv_latent(obs_batch)
+    #         hist_latent_batch = self.actor_critic.actor.infer_hist_latent(obs_batch)
+    #         hist_latent_loss = (
+    #             (priv_latent_batch.detach() - hist_latent_batch).norm(p=2, dim=1).mean()
+    #         )
+    #         self.hist_encoder_optimizer.zero_grad()
 
-            mean_hist_latent_loss += hist_latent_loss.item()
-        num_updates = self.num_learning_epochs * self.num_mini_batches
-        mean_hist_latent_loss /= num_updates
-        self.storage.clear()
-        self.update_counter()
-        return mean_hist_latent_loss
+    #         mean_hist_latent_loss += hist_latent_loss.item()
+    #     num_updates = self.num_learning_epochs * self.num_mini_batches
+    #     mean_hist_latent_loss /= num_updates
+    #     self.storage.clear()
+    #     self.update_counter()
+    #     return mean_hist_latent_loss
 
     def update_counter(self):
         self.counter += 1
