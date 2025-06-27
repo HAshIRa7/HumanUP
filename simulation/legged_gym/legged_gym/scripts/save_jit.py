@@ -53,7 +53,7 @@ class HardwareRefNN(nn.Module):
         
         self.normalizer = None
         
-        self.actor = Actor(num_prop, 
+        self.actor = Actor(num_prop*self.num_hist, 
                            num_actions, 
                            actor_hidden_dims, 
                            activation, tanh_encoder_output=False)
@@ -66,7 +66,7 @@ class HardwareRefNN(nn.Module):
 
     def forward(self, obs):
         # assert obs.shape[1] == self.num_obs, f"Expected {self.num_obs} but got {obs.shape[1]}"
-        obs = self.normalizer(obs)
+        # obs = self.normalizer(obs)
         return self.actor(obs, hist_encoding=False, eval=False)
     
 def play(args):
@@ -78,11 +78,11 @@ def play(args):
         num_scan = 0
         num_actions = 23
         
-        n_proprio = 3 + 3 + 3*num_actions
+        n_proprio = 3 + 3 + 3*num_actions + 1
     else:
         raise ValueError(f"Robot {args.robot} not supported!")
     
-    history_len = 10
+    history_len = 4
 
     device = torch.device('cpu')
     policy = HardwareRefNN(n_proprio, 
@@ -93,7 +93,7 @@ def play(args):
     print(f"Loading model from: {load_path}")
     ac_state_dict = torch.load(load_path, map_location=device)
     policy.load_state_dict(ac_state_dict['model_state_dict'], strict=False)
-    policy.load_normalizer(ac_state_dict['normalizer'])
+    # policy.load_normalizer(ac_state_dict['normalizer'])
     
     policy = policy.to(device)#.cpu()
     if not os.path.exists(os.path.join(load_run, "traced")):
@@ -104,7 +104,7 @@ def play(args):
     with torch.no_grad(): 
         num_envs = 2
         
-        obs_input = torch.ones(num_envs, n_proprio, device=device)
+        obs_input = torch.ones(num_envs, n_proprio * history_len, device=device)
         print("obs_input shape: ", obs_input.shape)
         
         traced_policy = torch.jit.trace(policy, obs_input)
