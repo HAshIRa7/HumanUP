@@ -818,7 +818,7 @@ class G1WaistTrack(Humanoid):
             [obs_buf, self.obs_history_buf[:, 1:].view(self.num_envs, -1)], dim=-1
         )
 
-        self.priv_obs_buf = torch.cat(
+        self.privileged_obs_buf = torch.cat(
             [priv_obs_buf, self.priv_obs_history_buf[:, 1:].view(self.num_envs, -1)], dim=-1
         )
 
