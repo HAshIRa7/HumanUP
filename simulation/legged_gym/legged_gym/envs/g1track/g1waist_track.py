@@ -112,7 +112,7 @@ class G1WaistTrack(Humanoid):
         if not self.headless:
             self.set_camera(self.cfg.viewer.pos, self.cfg.viewer.lookat)
 
-        self.target_traj_length = int(8 / self.dt) + 1 # set the trajectory time as 8 second
+        self.target_traj_length = int(6 / self.dt) + 1 # set the trajectory time as 8 second
         if self.cfg.env.traj_name:
             self.traj_name = self.cfg.env.traj_name
             with open(f"../../logs/env_logs/{self.traj_name}/dof_pos_all.pkl", "rb") as f:
@@ -634,7 +634,15 @@ class G1WaistTrack(Humanoid):
 
         if self.cfg.env.terminate_on_height:
             base_too_high = torch.logical_or(self.root_states[:, 2] > 1.2, self.root_states[:, 2] < 0.0)
-            self.reset_buf[base_too_high] = 1
+            self.reset_buf[base_too_high] = 1 
+
+        if self.cfg.env.termination__probability_by_out_of_limits_torque > 0:
+            knee_indices = [3, 9]
+            out_of_limits = torch.sum((torch.abs(self.torques) - self.torque_limits).clip(min=0.)[:, knee_indices], dim=-1)
+            print(f'out_of_limits: {out_of_limits.sum()}')
+            if torch.rand(1) < self.cfg.env.termination__probability_by_out_of_limits_torque:
+                self.reset_buf |= out_of_limits > 0
+
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         if len(env_ids) > 0:
             self.termination_height[env_ids] = self.root_states[env_ids, 2]
@@ -766,26 +774,6 @@ class G1WaistTrack(Humanoid):
             dim=-1,
         )
 
-        # if self.cfg.domain_rand.domain_rand_general:
-        #     priv_latent = torch.cat(
-        #         (
-        #             self.mass_params_tensor,
-        #             self.friction_coeffs_tensor,
-        #             self.motor_strength[0] - 1,
-        #             self.motor_strength[1] - 1,
-        #             self.base_lin_vel,
-        #         ),
-        #         dim=-1,
-        #     )
-        # else:
-        #     priv_latent = torch.zeros(
-        #         (self.num_envs, self.cfg.env.n_priv_latent), device=self.device
-        #     ) 
-
-        # self.privileged_obs_buf = torch.cat(
-        #     [obs_buf, priv_latent, self.obs_history_buf.view(self.num_envs, -1)], dim=-1
-        # )
-
         head_height = self.rigid_body_states[:, self.head_idx, 2]
         target_head_height = self.head_height_all_interp[current_phase].squeeze(-1)
         head_height_error = torch.abs(head_height - target_head_height)
@@ -821,7 +809,6 @@ class G1WaistTrack(Humanoid):
         self.privileged_obs_buf = torch.cat(
             [priv_obs_buf, self.priv_obs_history_buf[:, 1:].view(self.num_envs, -1)], dim=-1
         )
-
 
         if self.cfg.env.history_len > 0:
             self.obs_history_buf = torch.where(

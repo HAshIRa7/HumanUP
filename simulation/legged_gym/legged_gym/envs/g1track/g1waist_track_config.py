@@ -66,7 +66,9 @@ class G1WaistTrackCfg(HumanoidCfg):
 
         no_symmetry_after_stand = True
 
-        traj_name = None
+        traj_name = None 
+
+        termination__probability_by_out_of_limits_torque = 0.25
 
     class terrain(HumanoidCfg.terrain):
         mesh_type = "plane"
@@ -255,13 +257,13 @@ class G1WaistTrackCfg(HumanoidCfg):
         drag_robot_part = "head"  # the part of the robot to be dragged up, choose from ["head", "torso", "base"]
         drag_force = 1500  # drag force [N] (1000N ~ 100kg)
         drag_force_curriculum = True
-        drag_force_curriculum_type = "sin"  # ["sin", "linear"]
+        drag_force_curriculum_type = "linear"  # ["sin", "linear"]
         # drag_force_curriculum_type = "linear"  # ["sin", "linear"]
         drag_force_curriculum_target_height = 0.728
         drag_interval = 50  # drag robot up every this many steps
         drag_when_falling = False  # True: drag robot up when falling； False: drag robot up regularly every drag_interval steps
         force_compenstation = False  # True: force compensation is applied
-        min_drag_vel = 0.1  # min drag velocity [m/s]
+        min_drag_vel = 0.0  # min drag velocity [m/s]
         max_drag_vel = 0.5  # max drag velocity [m/s]
 
         domain_rand_general = True  # manually set this, setting from parser does not work;
@@ -277,7 +279,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         added_mass_range = [-3.0, 3]
 
         randomize_base_com = True and domain_rand_general
-        added_com_range = [-0.05, 0.05]
+        added_com_range = [-0.1, 0.1]
 
         push_robots = True and domain_rand_general
         push_interval_s = 4
@@ -343,4 +345,4 @@ class G1WaistTrackCfgPPO(HumanoidCfgPPO):
 
     class algorithm(HumanoidCfgPPO.algorithm):
         grad_penalty_coef_schedule = [0.00, 0.00, 700, 1000]  # NOTE: no grad penalty
-        entropy_coef = 0.000
+        entropy_coef = 0.005
