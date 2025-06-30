@@ -39,13 +39,15 @@ class G1WaistTrackCfg(HumanoidCfg):
         num_envs = 4096
         num_actions = 23  # NOTE: the wrist dof is removed
         n_priv = 0
-        n_proprio = 3 + 3 + 3 * num_actions  # NOTE
-        n_priv_latent = 4 + 1 + 2 * num_actions + 3
-        history_len = 10
+        n_proprio = 3 + 3 + 3 * num_actions + 1# NOTE
+        n_priv_latent = 3 + 3 + 3 + 4 * num_actions + 1 + 1
+        history_len = 4
 
-        num_observations = n_proprio + n_priv_latent + history_len * n_proprio + n_priv
+        #n_proprio = history_len * n_proprio
 
-        num_privileged_obs = None
+        num_observations = n_proprio * (history_len)#n_proprio + n_priv_latent + history_len * n_proprio + n_priv
+
+        num_privileged_obs = n_priv_latent * (history_len) #+ n_priv
 
         env_spacing = 3.0  # not used with heightfields/trimeshes
         send_timeouts = True  # send time out information to the algorithm
@@ -57,14 +59,16 @@ class G1WaistTrackCfg(HumanoidCfg):
         history_encoding = True
         contact_buf_len = 10
 
-        normalize_obs = True
+        normalize_obs = False
 
         terminate_on_velocity = True
         terminate_on_height = True
 
         no_symmetry_after_stand = True
 
-        traj_name = None
+        traj_name = None 
+
+        termination__probability_by_out_of_limits_torque = 0.25
 
     class terrain(HumanoidCfg.terrain):
         mesh_type = "plane"
@@ -238,7 +242,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         double_support_threshold = 0.1
         only_positive_rewards = False
         clip_inf_rewards = False
-        tracking_sigma = 0.2
+        tracking_sigma = 0.35
         tracking_sigma_ang = 0.125
         clip_inf_rewards = False
         max_contact_force = 500
@@ -259,7 +263,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         drag_interval = 50  # drag robot up every this many steps
         drag_when_falling = False  # True: drag robot up when falling； False: drag robot up regularly every drag_interval steps
         force_compenstation = False  # True: force compensation is applied
-        min_drag_vel = 0.1  # min drag velocity [m/s]
+        min_drag_vel = 0.0  # min drag velocity [m/s]
         max_drag_vel = 0.5  # max drag velocity [m/s]
 
         domain_rand_general = True  # manually set this, setting from parser does not work;
@@ -337,6 +341,8 @@ class G1WaistTrackCfgPPO(HumanoidCfgPPO):
     class policy(HumanoidCfgPPO.policy):
         action_std = [0.3, 0.3, 0.3, 0.4, 0.2, 0.2] * 2 + [0.1] * 3 + [0.2] * 8  # NOTE: the wrist dof is removed
         init_noise_std = 1.0
+        fix_action_std = False
 
     class algorithm(HumanoidCfgPPO.algorithm):
         grad_penalty_coef_schedule = [0.00, 0.00, 700, 1000]  # NOTE: no grad penalty
+        entropy_coef = 0.005

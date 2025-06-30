@@ -161,7 +161,7 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
             cfg_train.runner.load_run = args.load_run
         if args.checkpoint is not None:
             cfg_train.runner.checkpoint = args.checkpoint
-        cfg_train.policy.fix_action_std = args.fix_action_std
+        # cfg_train.policy.fix_action_std = args.fix_action_std
         cfg_train.policy.action_std_curriculum = args.action_std_curriculum  # NOTE: std curriculum! - Runpei
         if args.no_rand:
             cfg_train.runner.policy_class_name = 'ActorCritic'
@@ -206,7 +206,7 @@ def get_args():
 
         {"name": "--record_video", "action": "store_true", "default": False, "help": "record video"},
         
-        {"name": "--fix_action_std", "action": "store_true", "default": False, "help": "fix std"},
+        # {"name": "--fix_action_std", "action": "store_true", "default": False, "help": "fix std"},
         {"name": "--action_std_curriculum", "action": "store_true", "default": False, "help": "std curriculum"},
         {"name": "--no_rand", "action": "store_true", "default": False, "help": "no domain randomization"},
         
