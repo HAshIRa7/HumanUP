@@ -112,7 +112,7 @@ class G1WaistTrack(Humanoid):
         if not self.headless:
             self.set_camera(self.cfg.viewer.pos, self.cfg.viewer.lookat)
 
-        self.target_traj_length = int(6 / self.dt) + 1 # set the trajectory time as 8 second
+        self.target_traj_length = int(8 / self.dt) + 1 # set the trajectory time as 8 second
         if self.cfg.env.traj_name:
             self.traj_name = self.cfg.env.traj_name
             with open(f"../../logs/env_logs/{self.traj_name}/dof_pos_all.pkl", "rb") as f:
@@ -636,12 +636,12 @@ class G1WaistTrack(Humanoid):
             base_too_high = torch.logical_or(self.root_states[:, 2] > 1.2, self.root_states[:, 2] < 0.0)
             self.reset_buf[base_too_high] = 1 
 
-        if self.cfg.env.termination__probability_by_out_of_limits_torque > 0:
-            knee_indices = [3, 9]
-            out_of_limits = torch.sum((torch.abs(self.torques) - self.torque_limits).clip(min=0.)[:, knee_indices], dim=-1)
-            print(f'out_of_limits: {out_of_limits.sum()}')
-            if torch.rand(1) < self.cfg.env.termination__probability_by_out_of_limits_torque:
-                self.reset_buf |= out_of_limits > 0
+        # if self.cfg.env.termination__probability_by_out_of_limits_torque > 0:
+        #     knee_indices = [3, 9]
+        #     out_of_limits = torch.sum((torch.abs(self.torques) - self.torque_limits).clip(min=0.)[:, knee_indices], dim=-1)
+        #     # print(f'out_of_limits: {out_of_limits.sum()}')
+        #     if torch.rand(1) < self.cfg.env.termination__probability_by_out_of_limits_torque:
+        #         self.reset_buf |= out_of_limits > 0
 
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         if len(env_ids) > 0:

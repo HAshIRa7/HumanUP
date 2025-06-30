@@ -242,7 +242,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         double_support_threshold = 0.1
         only_positive_rewards = False
         clip_inf_rewards = False
-        tracking_sigma = 0.2
+        tracking_sigma = 0.35
         tracking_sigma_ang = 0.125
         clip_inf_rewards = False
         max_contact_force = 500
@@ -257,7 +257,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         drag_robot_part = "head"  # the part of the robot to be dragged up, choose from ["head", "torso", "base"]
         drag_force = 1500  # drag force [N] (1000N ~ 100kg)
         drag_force_curriculum = True
-        drag_force_curriculum_type = "linear"  # ["sin", "linear"]
+        drag_force_curriculum_type = "sin"  # ["sin", "linear"]
         # drag_force_curriculum_type = "linear"  # ["sin", "linear"]
         drag_force_curriculum_target_height = 0.728
         drag_interval = 50  # drag robot up every this many steps
@@ -279,7 +279,7 @@ class G1WaistTrackCfg(HumanoidCfg):
         added_mass_range = [-3.0, 3]
 
         randomize_base_com = True and domain_rand_general
-        added_com_range = [-0.1, 0.1]
+        added_com_range = [-0.05, 0.05]
 
         push_robots = True and domain_rand_general
         push_interval_s = 4
